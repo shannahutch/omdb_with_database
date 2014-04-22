@@ -10,21 +10,42 @@ configure do
 end
 
 get '/' do
-  #Add code here
+   
+  erb :index
+  #search form
 end
 
-
+get '/search' do
+  c= PGconn.new(:host => "localhost", :dbname => dbname)
+  @movies = c.exec_params("select * from movies WHERE title = $1;", [params["title"]])  
+  #$1 is a placeholder variable
+  c.close
+  # binding.pry
+  #Add code
+erb :search
+end
 #Add code here
 
 
-get '/movies/new' do
-  erb :new_movie
-end
+get '/title/:id' do
+
+  c= PGconn.new(:host => "localhost", :dbname => dbname) 
+  @movie=c.exec_params("select * from movies WHERE id = $1;", 
+                [params[:id]])
+  c.close
+  @title="title"
+  @plot="plot"
+  @genre="genre"
+  @year="year"
+  @actors="actors"
+  erb :show
+  end
 
 post '/movies' do
-  c = PGconn.new(:host => "localhost", :dbname => dbname)
+  c = PGconn.new(:host => "localhost", :dbname => dbname) #creates pg connection
   c.exec_params("INSERT INTO movies (title, year) VALUES ($1, $2)",
                   [params["title"], params["year"]])
+  # sql goes into the c.exec_param
   c.close
   redirect '/'
 end
